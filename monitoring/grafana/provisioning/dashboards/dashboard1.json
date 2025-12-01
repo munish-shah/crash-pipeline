@@ -1,0 +1,207 @@
+{
+  "title": "ETL Pipeline Overview",
+  "tags": [
+    "etl",
+    "pipeline"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 16,
+  "version": 0,
+  "refresh": "10s",
+  "panels": [
+    {
+      "id": 1,
+      "title": "Extract Duration (avg)",
+      "type": "stat",
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "expr": "rate(extractor_duration_seconds_sum[5m]) / rate(extractor_duration_seconds_count[5m])",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "decimals": 3
+        }
+      }
+    },
+    {
+      "id": 2,
+      "title": "Transform Duration (avg)",
+      "type": "stat",
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      },
+      "targets": [
+        {
+          "expr": "rate(transformer_duration_seconds_sum[5m]) / rate(transformer_duration_seconds_count[5m])",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "decimals": 3
+        }
+      }
+    },
+    {
+      "id": 3,
+      "title": "Clean Duration (avg)",
+      "type": "stat",
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 12,
+        "y": 0
+      },
+      "targets": [
+        {
+          "expr": "rate(cleaner_duration_seconds_sum[5m]) / rate(cleaner_duration_seconds_count[5m])",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "decimals": 3
+        }
+      }
+    },
+    {
+      "id": 4,
+      "title": "Rows Processed by Stage",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "targets": [
+        {
+          "expr": "extractor_rows_fetched_total",
+          "legendFormat": "Extracted",
+          "refId": "A"
+        },
+        {
+          "expr": "transformer_rows_processed_total",
+          "legendFormat": "Transformed",
+          "refId": "B"
+        },
+        {
+          "expr": "cleaner_rows_processed_total",
+          "legendFormat": "Cleaned",
+          "refId": "C"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "id": 5,
+      "title": "Error Counts by Service",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "targets": [
+        {
+          "expr": "extractor_errors_total",
+          "legendFormat": "Extractor Errors",
+          "refId": "A"
+        },
+        {
+          "expr": "transformer_errors_total",
+          "legendFormat": "Transformer Errors",
+          "refId": "B"
+        },
+        {
+          "expr": "cleaner_errors_total",
+          "legendFormat": "Cleaner Errors",
+          "refId": "C"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      }
+    },
+    {
+      "id": 6,
+      "title": "Service Uptime",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      },
+      "targets": [
+        {
+          "expr": "extractor_uptime_seconds",
+          "legendFormat": "Extractor",
+          "refId": "A"
+        },
+        {
+          "expr": "transformer_uptime_seconds",
+          "legendFormat": "Transformer",
+          "refId": "B"
+        },
+        {
+          "expr": "cleaner_uptime_seconds",
+          "legendFormat": "Cleaner",
+          "refId": "C"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        }
+      }
+    },
+    {
+      "id": 7,
+      "title": "Custom: Pipeline Success Rate",
+      "type": "stat",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      },
+      "targets": [
+        {
+          "expr": "(sum(extractor_runs_total) + sum(transformer_runs_total) + sum(cleaner_runs_total) - sum(extractor_errors_total) - sum(transformer_errors_total) - sum(cleaner_errors_total)) / (sum(extractor_runs_total) + sum(transformer_runs_total) + sum(cleaner_runs_total)) * 100",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "decimals": 1
+        }
+      },
+      "description": "Custom metric: Overall pipeline health - percentage of successful runs across all services"
+    }
+  ]
+}

@@ -1,0 +1,112 @@
+groups:
+  - name: etl_pipeline_alerts
+    interval: 15s
+    rules:
+      # Alert 1: Extractor Failures
+      - alert: ExtractorFailures
+        expr: increase(extractor_errors_total[5m]) > 0
+        for: 2m
+        labels:
+          severity: warning
+          service: extractor
+        annotations:
+          summary: "Extractor has failures"
+          description: "Extractor has encountered {{ $value }} errors in the last 5 minutes"
+
+      # Alert 2: Cleaner Too Slow
+      - alert: CleanerTooSlow
+        expr: histogram_quantile(0.95, sum(rate(cleaner_duration_seconds_bucket[5m])) by (le)) > 300
+        for: 2m
+        labels:
+          severity: warning
+          service: cleaner
+        annotations:
+          summary: "Cleaner is running too slowly"
+          description: "Cleaner p95 duration is {{ $value }}s (threshold: 300s)"
+
+      # Alert 3: Transformer Failures
+      - alert: TransformerFailures
+        expr: increase(transformer_errors_total[5m]) > 0
+        for: 2m
+        labels:
+          severity: warning
+          service: transformer
+        annotations:
+          summary: "Transformer has failures"
+          description: "Transformer has encountered {{ $value }} errors in the last 5 minutes"
+
+      # Alert 4: Service Down
+      - alert: ServiceDown
+        expr: up{job=~"extractor|transformer|cleaner"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: "Service {{ $labels.job }} has been down for more than 1 minute"
+
+      # Alert 5: RabbitMQ Queue Backup
+      - alert: RabbitMQQueueBackup
+        expr: rabbitmq_queue_messages_ready > 1000
+        for: 5m
+        labels:
+          severity: warning
+          service: rabbitmq
+        annotations:
+          summary: "RabbitMQ queue has too many messages"
+          description: "Queue {{ $labels.queue }} has {{ $value }} messages ready (threshold: 1000)"
+
+      # Alert 6: MinIO Low Disk Space
+      - alert: MinIOLowDiskSpace
+        expr: (minio_cluster_capacity_raw_free_bytes / minio_cluster_capacity_raw_total_bytes) < 0.1
+        for: 5m
+        labels:
+          severity: warning
+          service: minio
+        annotations:
+          summary: "MinIO disk space is low"
+          description: "MinIO has only {{ $value | humanizePercentage }} free space remaining"
+
+      # Alert 7: High Error Rate
+      - alert: HighErrorRate
+        expr: |
+          (
+            rate(extractor_errors_total[5m]) +
+            rate(transformer_errors_total[5m]) +
+            rate(cleaner_errors_total[5m])
+          ) > 5
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate across pipeline"
+          description: "Combined error rate is {{ $value }} errors/sec across all ETL services"
+
+      # Alert 8: Streamlit Model Accuracy Drop (Custom)
+      - alert: StreamlitModelAccuracyDrop
+        expr: streamlit_model_accuracy < 0.6
+        for: 5m
+        labels:
+          severity: warning
+          service: streamlit
+        annotations:
+          summary: "ML model accuracy has dropped"
+          description: "Model accuracy is {{ $value }} (threshold: 0.6)"
+
+      # Alert 9: No Rows Processed (Custom)
+      - alert: NoRowsProcessed
+        expr: |
+          (
+            rate(extractor_rows_fetched_total[10m]) +
+            rate(transformer_rows_processed_total[10m]) +
+            rate(cleaner_rows_processed_total[10m])
+          ) == 0
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Pipeline appears stalled"
+          description: "No rows have been processed in the last 10 minutes across all stages"
+
+
+

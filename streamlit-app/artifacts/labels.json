@@ -1,0 +1,4 @@
+{
+  "positive_class": "Injury/Tow",
+  "negative_class": "No Injury/Drive Away"
+}
