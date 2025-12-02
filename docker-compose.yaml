@@ -111,6 +111,19 @@ services:
       - prometheus
     restart: unless-stopped
 
+  streamlit:
+    build: ./streamlit-app
+    container_name: streamlit
+    ports:
+      - "8501:8501"   # Streamlit UI
+    env_file: .env
+    volumes:
+      - ./duckdb-data:/data/gold:ro  # Read-only access to DuckDB for queries
+    depends_on:
+      - cleaner
+      - prometheus
+    restart: unless-stopped
+
 volumes:
   prometheus_data:
   grafana_data:
