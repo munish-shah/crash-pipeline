@@ -276,62 +276,62 @@ def run_transform_job(msg: dict, channel=None):
     transformer_runs_total.inc()
     
     try:
-    corr       = msg.get("corr_id")
-    raw_bucket = msg.get("raw_bucket", RAW_BUCKET)
-    # prefer xform_bucket; fallback to clean_bucket; finally env
-    out_bucket = msg.get("xform_bucket") or msg.get("clean_bucket") or XFORM_BUCKET_ENV
-    prefix = PREFIX
-    if not corr or not out_bucket:
-        raise ValueError("run_transform_job: missing corr_id or (xform_bucket|clean_bucket|XFORM_BUCKET)")
+        corr       = msg.get("corr_id")
+        raw_bucket = msg.get("raw_bucket", RAW_BUCKET)
+        # prefer xform_bucket; fallback to clean_bucket; finally env
+        out_bucket = msg.get("xform_bucket") or msg.get("clean_bucket") or XFORM_BUCKET_ENV
+        prefix = PREFIX
+        if not corr or not out_bucket:
+            raise ValueError("run_transform_job: missing corr_id or (xform_bucket|clean_bucket|XFORM_BUCKET)")
 
-    cli = minio_client()
+        cli = minio_client()
 
-    # Ensure target bucket exists
-    try:
-        if not cli.bucket_exists(out_bucket):
-            cli.make_bucket(out_bucket)
-    except S3Error as e:
-        if e.code not in {"BucketAlreadyOwnedByYou", "BucketAlreadyExists"}:
-            raise
+        # Ensure target bucket exists
+        try:
+            if not cli.bucket_exists(out_bucket):
+                cli.make_bucket(out_bucket)
+        except S3Error as e:
+            if e.code not in {"BucketAlreadyOwnedByYou", "BucketAlreadyExists"}:
+                raise
 
-    # Load raw pages (partitioned by year; filter by corr)
-    crashes_df  = load_dataset(cli, raw_bucket, prefix, "crashes",  corr)
-    vehicles_df = load_dataset(cli, raw_bucket, prefix, "vehicles", corr)
-    people_df   = load_dataset(cli, raw_bucket, prefix, "people",   corr)
+        # Load raw pages (partitioned by year; filter by corr)
+        crashes_df  = load_dataset(cli, raw_bucket, prefix, "crashes",  corr)
+        vehicles_df = load_dataset(cli, raw_bucket, prefix, "vehicles", corr)
+        people_df   = load_dataset(cli, raw_bucket, prefix, "people",   corr)
 
-    merged = merge_crash_vehicles_people(
-        crashes=crashes_df,
-        vehicles=vehicles_df,
-        people=people_df,
-        id_col="crash_record_id",
-    )
-
-    out_key = f"{prefix}/corr={corr}/merged.csv"
-    write_csv(cli, out_bucket, out_key, make_csv_safe(merged))
-    
-    # Record rows processed
-    rows_count = merged.height
-    transformer_rows_processed.inc(rows_count)
-    
-    logging.info(f"Wrote s3://{out_bucket}/{out_key} (rows={rows_count}, cols={merged.width})")
-    
-    # Publish to clean queue
-    if channel:
-        clean_msg = {
-            "type": "clean",
-            "corr_id": corr,
-            "xform_bucket": out_bucket
-        }
-        channel.basic_publish(
-            exchange='',
-            routing_key=os.getenv("CLEAN_QUEUE", "clean"),
-            body=json.dumps(clean_msg),
-            properties=pika.BasicProperties(delivery_mode=2)
+        merged = merge_crash_vehicles_people(
+            crashes=crashes_df,
+            vehicles=vehicles_df,
+            people=people_df,
+            id_col="crash_record_id",
         )
-        logging.info(f"Published clean job for corr={corr}")
-    
-    # Record successful duration (always record, not just if channel exists)
-    transformer_duration_seconds.observe(time.time() - job_start)
+
+        out_key = f"{prefix}/corr={corr}/merged.csv"
+        write_csv(cli, out_bucket, out_key, make_csv_safe(merged))
+        
+        # Record rows processed
+        rows_count = merged.height
+        transformer_rows_processed.inc(rows_count)
+        
+        logging.info(f"Wrote s3://{out_bucket}/{out_key} (rows={rows_count}, cols={merged.width})")
+        
+        # Publish to clean queue
+        if channel:
+            clean_msg = {
+                "type": "clean",
+                "corr_id": corr,
+                "xform_bucket": out_bucket
+            }
+            channel.basic_publish(
+                exchange='',
+                routing_key=os.getenv("CLEAN_QUEUE", "clean"),
+                body=json.dumps(clean_msg),
+                properties=pika.BasicProperties(delivery_mode=2)
+            )
+            logging.info(f"Published clean job for corr={corr}")
+        
+        # Record successful duration (always record, not just if channel exists)
+        transformer_duration_seconds.observe(time.time() - job_start)
         
     except Exception as e:
         transformer_errors_total.inc()
