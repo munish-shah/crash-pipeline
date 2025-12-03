@@ -276,7 +276,7 @@ def run_transform_job(msg: dict, channel=None):
     transformer_runs_total.inc()
     
     try:
-        corr       = msg.get("corr_id")
+        corr = msg.get("corr_id")
         raw_bucket = msg.get("raw_bucket", RAW_BUCKET)
         # prefer xform_bucket; fallback to clean_bucket; finally env
         out_bucket = msg.get("xform_bucket") or msg.get("clean_bucket") or XFORM_BUCKET_ENV
