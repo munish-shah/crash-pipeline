@@ -48,12 +48,12 @@
       },
       "targets": [
         {
-          "expr": "sum(rate(rabbitmq_queue_messages_published_total{queue=~\"extract|transform|clean\"}[5m])) by (queue)",
+          "expr": "sum(rate(rabbitmq_queue_messages_published_total{queue=~\"extract|transform|clean\"}[15m])) by (queue)",
           "legendFormat": "Published ({{queue}})",
           "refId": "A"
         },
         {
-          "expr": "sum(rate(rabbitmq_queue_messages_delivered_total{queue=~\"extract|transform|clean\"}[5m])) by (queue)",
+          "expr": "sum(rate(rabbitmq_queue_messages_delivered_total{queue=~\"extract|transform|clean\"}[15m])) by (queue)",
           "legendFormat": "Consumed ({{queue}})",
           "refId": "B"
         }
@@ -223,7 +223,7 @@
       },
       "targets": [
         {
-          "expr": "rate(cleaner_duckdb_write_duration_seconds_sum[5m]) / rate(cleaner_duckdb_write_duration_seconds_count[5m])",
+          "expr": "(increase(cleaner_duckdb_write_duration_seconds_sum[15m]) / increase(cleaner_duckdb_write_duration_seconds_count[15m])) or vector(0)",
           "refId": "A"
         }
       ],
