@@ -231,6 +231,11 @@ st.markdown("""
 # Helper Functions
 def get_db_connection():
     """Connect to Gold DuckDB"""
+    # Check Docker path first (when running in container)
+    docker_path = Path("/data/gold/gold.duckdb")
+    if docker_path.exists():
+        return duckdb.connect(str(docker_path), read_only=True)
+    # Fall back to local path (when running locally)
     db_path = Path(__file__).parent / "Pipeline" / "data" / "gold" / "gold.duckdb"
     if db_path.exists():
         return duckdb.connect(str(db_path), read_only=True)
@@ -1075,8 +1080,12 @@ Folders to delete:
     with tab2:
         st.subheader("Gold Database (DuckDB) Management")
         
-        # Status Card
-        db_path = Path(__file__).parent / "Pipeline" / "data" / "gold" / "gold.duckdb"
+        # Status Card - check Docker path first, then local
+        docker_path = Path("/data/gold/gold.duckdb")
+        if docker_path.exists():
+            db_path = docker_path
+        else:
+            db_path = Path(__file__).parent / "Pipeline" / "data" / "gold" / "gold.duckdb"
         
         st.markdown("### Database Status")
         total_rows, col_count, latest_date = get_gold_stats()
