@@ -1869,10 +1869,19 @@ elif page == "Model":
     # ========================================================================
     st.subheader("📊 Model Summary")
     
-    # Define artifact paths
-    MODEL_PATH = Path(__file__).parent / "artifacts" / "model.pkl"
-    THRESHOLD_PATH = Path(__file__).parent / "artifacts" / "threshold.txt"
-    LABELS_PATH = Path(__file__).parent / "artifacts" / "labels.json"
+    # Define artifact paths (check both Docker path and local path)
+    base_path = Path(__file__).parent
+    MODEL_PATH = base_path / "artifacts" / "model.pkl"
+    THRESHOLD_PATH = base_path / "artifacts" / "threshold.txt"
+    LABELS_PATH = base_path / "artifacts" / "labels.json"
+    
+    # Check if artifacts exist
+    if not MODEL_PATH.exists() or not THRESHOLD_PATH.exists() or not LABELS_PATH.exists():
+        st.error("❌ Model artifacts not found!")
+        st.info(f"Looking for artifacts in: {base_path / 'artifacts'}")
+        st.info("Make sure model.pkl, threshold.txt, and labels.json are in the artifacts/ folder")
+        st.info("**Fix:** Rebuild Streamlit container: `docker compose build streamlit && docker compose restart streamlit`")
+        st.stop()
     
     # Cached model loading helper
     @st.cache_resource
