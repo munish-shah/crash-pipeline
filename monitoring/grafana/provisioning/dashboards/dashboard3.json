@@ -22,16 +22,20 @@
       },
       "targets": [
         {
-          "expr": "streamlit_model_accuracy",
-          "refId": "A"
+          "expr": "avg(streamlit_model_accuracy) * 100",
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "percentunit",
-          "decimals": 3,
+          "unit": "percent",
+          "decimals": 1,
           "min": 0,
-          "max": 1
+          "max": 100
         }
       }
     },
@@ -47,16 +51,20 @@
       },
       "targets": [
         {
-          "expr": "streamlit_model_precision",
-          "refId": "A"
+          "expr": "avg(streamlit_model_precision) * 100",
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "percentunit",
-          "decimals": 3,
+          "unit": "percent",
+          "decimals": 1,
           "min": 0,
-          "max": 1
+          "max": 100
         }
       }
     },
@@ -72,16 +80,20 @@
       },
       "targets": [
         {
-          "expr": "streamlit_model_recall",
-          "refId": "A"
+          "expr": "avg(streamlit_model_recall) * 100",
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "percentunit",
-          "decimals": 3,
+          "unit": "percent",
+          "decimals": 1,
           "min": 0,
-          "max": 1
+          "max": 100
         }
       }
     },
@@ -97,8 +109,12 @@
       },
       "targets": [
         {
-          "expr": "streamlit_predictions_total",
-          "refId": "A"
+          "expr": "sum(streamlit_predictions_total)",
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "fieldConfig": {
@@ -121,7 +137,11 @@
         {
           "expr": "(increase(streamlit_predictions_total[15m]) / 15) or vector(0)",
           "legendFormat": "Predictions/sec",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "fieldConfig": {
@@ -144,7 +164,11 @@
         {
           "expr": "(increase(streamlit_predictions_batch_size_sum[15m]) / increase(streamlit_predictions_batch_size_count[15m])) or vector(0)",
           "legendFormat": "Avg Batch Size",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "fieldConfig": {
@@ -165,8 +189,12 @@
       },
       "targets": [
         {
-          "expr": "streamlit_uptime_seconds",
-          "refId": "A"
+          "expr": "max(streamlit_uptime_seconds)",
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "fieldConfig": {
@@ -187,8 +215,13 @@
       },
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, sum(rate(streamlit_prediction_duration_seconds_bucket[15m])) by (le))",
-          "refId": "A"
+          "expr": "(histogram_quantile(0.95, sum(rate(streamlit_prediction_duration_seconds_bucket[15m])) by (le)) or vector(0))",
+          "legendFormat": "p95 Latency",
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "fieldConfig": {
@@ -213,17 +246,29 @@
         {
           "expr": "histogram_quantile(0.50, sum(rate(streamlit_prediction_duration_seconds_bucket[15m])) by (le)) or vector(0)",
           "legendFormat": "p50",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         },
         {
           "expr": "histogram_quantile(0.95, sum(rate(streamlit_prediction_duration_seconds_bucket[15m])) by (le)) or vector(0)",
           "legendFormat": "p95",
-          "refId": "B"
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         },
         {
           "expr": "histogram_quantile(0.99, sum(rate(streamlit_prediction_duration_seconds_bucket[15m])) by (le)) or vector(0)",
           "legendFormat": "p99",
-          "refId": "C"
+          "refId": "C",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "fieldConfig": {
@@ -245,8 +290,12 @@
       },
       "targets": [
         {
-          "expr": "streamlit_errors_total",
-          "refId": "A"
+          "expr": "sum(streamlit_errors_total)",
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "fieldConfig": {
