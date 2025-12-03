@@ -268,8 +268,13 @@ def get_gold_stats():
 def publish_to_rabbitmq(job_data):
     """Publish job to RabbitMQ extract queue"""
     try:
-        # Connect to RabbitMQ
-        connection = pika.BlockingConnection(pika.ConnectionParameters('localhost', 5672))
+        # Connect to RabbitMQ (use service name in Docker, or RABBITMQ_URL if set)
+        rabbitmq_url = os.getenv('RABBITMQ_URL', 'amqp://guest:guest@rabbitmq:5672/')
+        if rabbitmq_url.startswith('amqp://'):
+            connection = pika.BlockingConnection(pika.URLParameters(rabbitmq_url))
+        else:
+            # Fallback to ConnectionParameters if URL format not used
+            connection = pika.BlockingConnection(pika.ConnectionParameters('rabbitmq', 5672))
         channel = connection.channel()
         
         # Declare the extract queue
