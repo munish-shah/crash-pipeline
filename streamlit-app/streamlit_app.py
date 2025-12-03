@@ -230,15 +230,27 @@ st.markdown("""
 
 # Helper Functions
 def get_db_connection():
-    """Connect to Gold DuckDB"""
+    """Connect to Gold DuckDB with retry for lock conflicts"""
     # Check Docker path first (when running in container)
     docker_path = Path("/data/gold/gold.duckdb")
     if docker_path.exists():
-        return duckdb.connect(str(docker_path), read_only=True)
+        # Retry up to 3 times with delay (cleaner might be writing)
+        for attempt in range(3):
+            try:
+                return duckdb.connect(str(docker_path), read_only=True)
+            except Exception as e:
+                if "lock" in str(e).lower() and attempt < 2:
+                    time.sleep(1)  # Wait 1 second before retry
+                    continue
+                # If still locked or other error, return None
+                return None
     # Fall back to local path (when running locally)
     db_path = Path(__file__).parent / "Pipeline" / "data" / "gold" / "gold.duckdb"
     if db_path.exists():
-        return duckdb.connect(str(db_path), read_only=True)
+        try:
+            return duckdb.connect(str(db_path), read_only=True)
+        except:
+            return None
     return None
 
 def check_container_health(service_name):
