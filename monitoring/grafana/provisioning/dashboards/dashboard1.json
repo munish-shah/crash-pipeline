@@ -21,7 +21,7 @@
       },
       "targets": [
         {
-          "expr": "rate(extractor_duration_seconds_sum[5m]) / rate(extractor_duration_seconds_count[5m])",
+          "expr": "(increase(extractor_duration_seconds_sum[15m]) / increase(extractor_duration_seconds_count[15m])) or vector(0)",
           "refId": "A"
         }
       ],
@@ -44,7 +44,7 @@
       },
       "targets": [
         {
-          "expr": "rate(transformer_duration_seconds_sum[5m]) / rate(transformer_duration_seconds_count[5m])",
+          "expr": "(increase(transformer_duration_seconds_sum[15m]) / increase(transformer_duration_seconds_count[15m])) or vector(0)",
           "refId": "A"
         }
       ],
@@ -67,7 +67,7 @@
       },
       "targets": [
         {
-          "expr": "rate(cleaner_duration_seconds_sum[5m]) / rate(cleaner_duration_seconds_count[5m])",
+          "expr": "(increase(cleaner_duration_seconds_sum[15m]) / increase(cleaner_duration_seconds_count[15m])) or vector(0)",
           "refId": "A"
         }
       ],
@@ -189,7 +189,7 @@
       },
       "targets": [
         {
-          "expr": "(sum(extractor_runs_total) + sum(transformer_runs_total) + sum(cleaner_runs_total) - sum(extractor_errors_total) - sum(transformer_errors_total) - sum(cleaner_errors_total)) / (sum(extractor_runs_total) + sum(transformer_runs_total) + sum(cleaner_runs_total)) * 100",
+          "expr": "((sum(extractor_runs_total) + sum(transformer_runs_total) + sum(cleaner_runs_total) - sum(extractor_errors_total) - sum(transformer_errors_total) - sum(cleaner_errors_total)) / (sum(extractor_runs_total) + sum(transformer_runs_total) + sum(cleaner_runs_total)) * 100) or vector(100)",
           "refId": "A"
         }
       ],
