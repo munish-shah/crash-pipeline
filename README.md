@@ -124,9 +124,9 @@ The pipeline includes comprehensive monitoring via Prometheus and Grafana:
 
 ### Video Demonstration
 
-<video src="docs/azure_demo_shah_munish.mp4" controls width="100%"></video>
+[![Pipeline Demo Video](https://img.youtube.com/vi/jbLd1ShHYQk/0.jpg)](https://youtu.be/jbLd1ShHYQk)
 
-**Note:** If the video doesn't display, you may need to convert it to `.mp4` format. GitHub's video player works best with `.mp4`, `.webm`, or `.ogg` formats.
+Click the thumbnail above to watch the full demonstration on YouTube.
 
 ## Prerequisites
 
@@ -372,8 +372,7 @@ Pipeline/
 │   ├── alerts.yml
 │   └── create_dashboards.py
 ├── docs/                    # Documentation assets
-│   ├── diagram.jpg          # Architecture diagram
-│   └── azure_demo_shah_munish.mp4  # Video demonstration
+│   └── diagram.jpg          # Architecture diagram
 ├── docker-compose.yaml      # Orchestrates all services
 ├── .env.sample              # Environment variable template
 ├── .gitignore               # Git ignore rules
@@ -459,12 +458,6 @@ If given more time:
 - Create CI/CD pipeline for automated testing and deployment
 - Add support for real-time streaming predictions
 - Implement model retraining automation based on data drift detection
-
----
-
-## License
-
-[Add your license here if applicable]
 
 ---
 
