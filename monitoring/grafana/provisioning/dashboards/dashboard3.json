@@ -119,7 +119,7 @@
       },
       "targets": [
         {
-          "expr": "rate(streamlit_predictions_total[5m])",
+          "expr": "(increase(streamlit_predictions_total[15m]) / 15) or vector(0)",
           "legendFormat": "Predictions/sec",
           "refId": "A"
         }
@@ -142,7 +142,7 @@
       },
       "targets": [
         {
-          "expr": "rate(streamlit_predictions_batch_size_sum[5m]) / rate(streamlit_predictions_batch_size_count[5m])",
+          "expr": "(increase(streamlit_predictions_batch_size_sum[15m]) / increase(streamlit_predictions_batch_size_count[15m])) or vector(0)",
           "legendFormat": "Avg Batch Size",
           "refId": "A"
         }
@@ -187,7 +187,7 @@
       },
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, rate(streamlit_prediction_duration_seconds_bucket[5m]))",
+          "expr": "histogram_quantile(0.95, sum(rate(streamlit_prediction_duration_seconds_bucket[15m])) by (le))",
           "refId": "A"
         }
       ],
@@ -211,17 +211,17 @@
       },
       "targets": [
         {
-          "expr": "histogram_quantile(0.50, rate(streamlit_prediction_duration_seconds_bucket[5m]))",
+          "expr": "histogram_quantile(0.50, sum(rate(streamlit_prediction_duration_seconds_bucket[15m])) by (le)) or vector(0)",
           "legendFormat": "p50",
           "refId": "A"
         },
         {
-          "expr": "histogram_quantile(0.95, rate(streamlit_prediction_duration_seconds_bucket[5m]))",
+          "expr": "histogram_quantile(0.95, sum(rate(streamlit_prediction_duration_seconds_bucket[15m])) by (le)) or vector(0)",
           "legendFormat": "p95",
           "refId": "B"
         },
         {
-          "expr": "histogram_quantile(0.99, rate(streamlit_prediction_duration_seconds_bucket[5m]))",
+          "expr": "histogram_quantile(0.99, sum(rate(streamlit_prediction_duration_seconds_bucket[15m])) by (le)) or vector(0)",
           "legendFormat": "p99",
           "refId": "C"
         }
