@@ -32,7 +32,7 @@ scrape_configs:
   # Streamlit ML Service
   - job_name: "streamlit"
     static_configs:
-      - targets: ["172.17.0.1:8080"]
+      - targets: ["streamlit:8080"]
         labels:
           service: "streamlit"
           stage: "ml"
