@@ -2,11 +2,11 @@
 
 ## Overview
 
-This project implements a complete end-to-end data engineering and machine learning pipeline for analyzing Chicago traffic crash data. The system extracts raw crash data from the Chicago Open Data Portal (Socrata API), transforms and cleans it through a medallion architecture (Bronze → Silver → Gold), and provides a machine learning model to predict crash severity.
+This project implements an end-to-end data engineering and machine learning pipeline for analyzing Chicago traffic crash data. The system extracts raw crash data from the Chicago Open Data Portal (Socrata API), transforms and cleans it through a medallion architecture (Bronze → Silver → Gold), and provides a machine learning model to predict crash severity.
 
 ### Problem Statement
 
-The pipeline solves the challenge of processing large-scale crash data from multiple sources (crashes, vehicles, people) and making it available for analysis and predictive modeling. It automates the entire ETL process, from API extraction to clean, analytics-ready data stored in DuckDB, with real-time monitoring and a user-friendly Streamlit interface.
+The pipeline addresses the challenge of processing large-scale crash data from multiple sources (crashes, vehicles, people) and making it available for analysis and predictive modeling. It automates the entire ETL process, from API extraction to clean, analytics-ready data stored in DuckDB, with real-time monitoring and a user-friendly Streamlit interface.
 
 ### Data Sources
 
@@ -49,7 +49,7 @@ The Streamlit dashboard provides:
 
 ## Architecture Diagram
 
-[PLACEHOLDER: Add architecture diagram here showing Extractor → MinIO → Transformer → Cleaner → DuckDB → Streamlit, with Prometheus/Grafana monitoring]
+![Pipeline Architecture](docs/diagram.jpg)
 
 ---
 
@@ -68,7 +68,7 @@ The extractor service pulls raw crash, vehicle, and people data from the Chicago
 
 ### Transformer (Python)
 
-The transformer service merges the three datasets (crashes, vehicles, people) into a single denormalized CSV file. It handles data type conversions, null handling, and creates a unified schema. The merged CSV is stored in MinIO as the Silver layer.
+The transformer service merges the three datasets (crashes, vehicles, people) into a single denormalized CSV file. It handles data type conversions, null handling, and creates a unified schema. The merged CSV is stored in MinIO as the Silver layer. Polars is used instead of Pandas for better performance on large datasets.
 
 **Key Features:**
 - Efficient merging using Polars for large datasets
@@ -78,7 +78,7 @@ The transformer service merges the three datasets (crashes, vehicles, people) in
 
 ### Cleaner (Python)
 
-The cleaner service applies data quality rules and business logic to create the Gold layer. It handles coordinate validation, outlier detection, feature engineering, and writes clean data to DuckDB.
+The cleaner service applies data quality rules and business logic to create the Gold layer. It handles coordinate validation, outlier detection, feature engineering, and writes clean data to DuckDB. The service includes schema evolution logic to automatically handle new columns that appear in later pipeline runs.
 
 **Key Features:**
 - Geographic filtering (valid Chicago coordinates only)
@@ -86,6 +86,7 @@ The cleaner service applies data quality rules and business logic to create the 
 - Boolean and enum normalization
 - Timestamp parsing and validation
 - Upsert logic to prevent duplicates
+- Automatic schema evolution for new columns
 - Tracks rows processed and dropped via Prometheus metrics
 
 ### Streamlit Application (Python)
@@ -121,16 +122,11 @@ The pipeline includes comprehensive monitoring via Prometheus and Grafana:
 
 ## Screenshots and Demonstrations
 
-[PLACEHOLDER: Add screenshots or video recording showing:
-- Running extractor
-- Running transformer
-- Running cleaner
-- Streamlit app (home page, train model page, prediction page)
-- DuckDB tables (shown in CLI or notebook)
-- Grafana dashboards showing metrics
-- Prometheus target list (showing your services)]
+### Video Demonstration
 
----
+<video src="docs/azure_demo_shah_munish.mp4" controls width="100%"></video>
+
+**Note:** If the video doesn't display, you may need to convert it to `.mp4` format. GitHub's video player works best with `.mp4`, `.webm`, or `.ogg` formats.
 
 ## Prerequisites
 
@@ -252,13 +248,95 @@ Publish a job message to the `extract` queue:
 }
 ```
 
-### Accessing Services
+### Accessing Services (Local)
 
 - **Streamlit**: http://localhost:8501
 - **Grafana**: http://localhost:3000 (admin/admin)
 - **Prometheus**: http://localhost:9090
 - **MinIO Console**: http://localhost:9001 (admin/admin123)
 - **RabbitMQ Management**: http://localhost:15672 (guest/guest)
+
+---
+
+## Azure Cloud Deployment
+
+The pipeline is deployed and running on an Azure Virtual Machine, demonstrating production-ready cloud infrastructure.
+
+### VM Configuration
+
+- **VM Name**: `crash-pipeline-vm`
+- **Image**: Ubuntu Server 24.04 LTS
+- **Size**: Standard_B2s (2 vCPUs, 4 GB RAM)
+- **Region**: West US 2
+- **Authentication**: SSH public key
+
+### Network Configuration
+
+The following ports are open in Azure Network Security Group:
+
+- **Port 22**: SSH access
+- **Port 8501**: Streamlit application
+- **Port 3000**: Grafana dashboards
+- **Port 9090**: Prometheus metrics
+- **Port 9001**: MinIO Console
+
+**Access URLs** (replace `YOUR_VM_IP` with your Azure VM's public IP):
+- **Streamlit**: `http://YOUR_VM_IP:8501`
+- **Grafana**: `http://YOUR_VM_IP:3000` (admin/admin)
+- **Prometheus**: `http://YOUR_VM_IP:9090`
+- **MinIO Console**: `http://YOUR_VM_IP:9001` (admin/admin123)
+
+### Deployment Steps
+
+1. **Clone repository on Azure VM**:
+   ```bash
+   git clone git@github.com:<your-username>/<your-repo>.git
+   cd <your-repo>
+   ```
+
+2. **Create environment and folders**:
+   ```bash
+   cp .env.sample .env
+   # Edit .env with your configuration
+   mkdir -p minio-data prometheus_data grafana_data duckdb-data
+   chmod -R 755 minio-data prometheus_data grafana_data duckdb-data
+   sudo chown -R 472:472 grafana_data
+   ```
+
+3. **Start all services**:
+   ```bash
+   docker compose up -d
+   ```
+
+4. **Verify all containers are running**:
+   ```bash
+   docker ps
+   ```
+
+### Differences from Local Deployment
+
+- **Streamlit runs in Docker**: On Azure, Streamlit is containerized and starts automatically with `docker compose up -d` (no separate terminal needed)
+- **Persistent storage**: All data persists across VM restarts via Docker volumes
+- **Public IP access**: Services are accessible from anywhere via the VM's public IP address
+- **Same functionality**: All features work identically to local deployment
+
+### Folder Structure on Azure
+
+The folder structure matches the local setup:
+```
+~/crash-pipeline/
+├── extractor/
+├── transformer/
+├── cleaner/
+├── streamlit-app/
+├── monitoring/
+├── minio-data/          # Persistent MinIO data
+├── prometheus_data/     # Persistent Prometheus metrics
+├── grafana_data/        # Persistent Grafana dashboards
+├── duckdb-data/         # Persistent DuckDB Gold tables
+├── docker-compose.yaml
+└── .env                 # Environment variables (not in Git)
+```
 
 ---
 
@@ -293,6 +371,9 @@ Pipeline/
 │   ├── prometheus.yml
 │   ├── alerts.yml
 │   └── create_dashboards.py
+├── docs/                    # Documentation assets
+│   ├── diagram.jpg          # Architecture diagram
+│   └── azure_demo_shah_munish.mp4  # Video demonstration
 ├── docker-compose.yaml      # Orchestrates all services
 ├── .env.sample              # Environment variable template
 ├── .gitignore               # Git ignore rules
@@ -342,7 +423,7 @@ Pipeline/
 
 ### Challenges Encountered
 
-1. **Data Volume and Performance**: Processing large datasets (100K+ rows) required optimization. Used Polars instead of Pandas for faster transformations and efficient memory usage.
+1. **Data Volume and Performance**: Processing large datasets (100K+ rows) required optimization. Switched from Pandas to Polars for faster transformations and better memory usage.
 
 2. **Class Imbalance**: The crash severity dataset was imbalanced (27% positive class). Addressed with balanced class weights and PR-AUC as the primary metric.
 
@@ -352,7 +433,11 @@ Pipeline/
 
 5. **Docker Volume Permissions**: Grafana required specific UID (472) for data persistence. Fixed with proper chown commands.
 
-### What I Learned
+6. **Schema Evolution**: Running the pipeline multiple times produced different column counts, causing DuckDB insertion failures. Added automatic schema evolution to handle new columns.
+
+7. **Grafana Dashboard Configuration**: Dashboards were showing demo data instead of real metrics. Fixed by adding Prometheus datasource configuration to all dashboard queries.
+
+### What Was Learned
 
 - End-to-end pipeline design with proper separation of concerns (Bronze/Silver/Gold)
 - Message queue patterns for decoupled service communication
@@ -360,10 +445,12 @@ Pipeline/
 - Handling imbalanced classification problems in ML
 - Docker Compose orchestration for multi-service applications
 - Data quality validation and outlier detection techniques
+- Schema evolution in databases
+- Cloud deployment on Azure VMs
 
 ### Future Improvements
 
-If given more time, I would:
+If given more time:
 - Add data validation schemas (e.g., Great Expectations)
 - Implement automated data quality reports
 - Add more sophisticated feature engineering (temporal features, location clustering)
@@ -384,4 +471,6 @@ If given more time, I would:
 ## Author
 
 Munish Shah
+
+
 
