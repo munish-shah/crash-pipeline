@@ -22,7 +22,11 @@
       "targets": [
         {
           "expr": "(increase(extractor_duration_seconds_sum[15m]) / increase(extractor_duration_seconds_count[15m])) or vector(0)",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "fieldConfig": {
@@ -45,7 +49,11 @@
       "targets": [
         {
           "expr": "(increase(transformer_duration_seconds_sum[15m]) / increase(transformer_duration_seconds_count[15m])) or vector(0)",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "fieldConfig": {
@@ -68,7 +76,11 @@
       "targets": [
         {
           "expr": "(increase(cleaner_duration_seconds_sum[15m]) / increase(cleaner_duration_seconds_count[15m])) or vector(0)",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "fieldConfig": {
@@ -92,17 +104,29 @@
         {
           "expr": "extractor_rows_fetched_total",
           "legendFormat": "Extracted",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         },
         {
           "expr": "transformer_rows_processed_total",
           "legendFormat": "Transformed",
-          "refId": "B"
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         },
         {
           "expr": "cleaner_rows_processed_total",
           "legendFormat": "Cleaned",
-          "refId": "C"
+          "refId": "C",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "fieldConfig": {
@@ -125,17 +149,29 @@
         {
           "expr": "extractor_errors_total",
           "legendFormat": "Extractor Errors",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         },
         {
           "expr": "transformer_errors_total",
           "legendFormat": "Transformer Errors",
-          "refId": "B"
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         },
         {
           "expr": "cleaner_errors_total",
           "legendFormat": "Cleaner Errors",
-          "refId": "C"
+          "refId": "C",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "fieldConfig": {
@@ -158,17 +194,29 @@
         {
           "expr": "extractor_uptime_seconds",
           "legendFormat": "Extractor",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         },
         {
           "expr": "transformer_uptime_seconds",
           "legendFormat": "Transformer",
-          "refId": "B"
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         },
         {
           "expr": "cleaner_uptime_seconds",
           "legendFormat": "Cleaner",
-          "refId": "C"
+          "refId": "C",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "fieldConfig": {
@@ -190,7 +238,11 @@
       "targets": [
         {
           "expr": "((sum(extractor_runs_total) + sum(transformer_runs_total) + sum(cleaner_runs_total) - sum(extractor_errors_total) - sum(transformer_errors_total) - sum(cleaner_errors_total)) / (sum(extractor_runs_total) + sum(transformer_runs_total) + sum(cleaner_runs_total)) * 100) or vector(100)",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "fieldConfig": {
