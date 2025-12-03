@@ -25,7 +25,11 @@
         {
           "expr": "rabbitmq_queue_messages_ready{queue=~\"extract|transform|clean\"}",
           "legendFormat": "{{queue}}",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "fieldConfig": {
@@ -50,12 +54,20 @@
         {
           "expr": "sum(rate(rabbitmq_queue_messages_published_total{queue=~\"extract|transform|clean\"}[15m])) by (queue)",
           "legendFormat": "Published ({{queue}})",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         },
         {
           "expr": "sum(rate(rabbitmq_queue_messages_delivered_total{queue=~\"extract|transform|clean\"}[15m])) by (queue)",
           "legendFormat": "Consumed ({{queue}})",
-          "refId": "B"
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "fieldConfig": {
@@ -80,7 +92,11 @@
         {
           "expr": "rabbitmq_queue_messages_unacked{queue=~\"extract|transform|clean\"}",
           "legendFormat": "Unacked ({{queue}})",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "fieldConfig": {
@@ -105,7 +121,11 @@
         {
           "expr": "minio_cluster_usage_object_total",
           "legendFormat": "Total Objects",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "fieldConfig": {
@@ -130,7 +150,11 @@
         {
           "expr": "minio_cluster_usage_total_bytes",
           "legendFormat": "Total Bytes",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "fieldConfig": {
@@ -154,7 +178,11 @@
       "targets": [
         {
           "expr": "minio_cluster_bucket_total",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "fieldConfig": {
@@ -176,7 +204,11 @@
       "targets": [
         {
           "expr": "(1 - (minio_cluster_capacity_raw_free_bytes / minio_cluster_capacity_raw_total_bytes)) * 100",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "fieldConfig": {
@@ -201,7 +233,11 @@
       "targets": [
         {
           "expr": "cleaner_rows_processed_total",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "fieldConfig": {
@@ -224,7 +260,11 @@
       "targets": [
         {
           "expr": "(increase(cleaner_duckdb_write_duration_seconds_sum[15m]) / increase(cleaner_duckdb_write_duration_seconds_count[15m])) or vector(0)",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "fieldConfig": {
@@ -248,7 +288,11 @@
       "targets": [
         {
           "expr": "(minio_cluster_capacity_raw_free_bytes / minio_cluster_capacity_raw_total_bytes) * 100",
-          "refId": "A"
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
         }
       ],
       "fieldConfig": {
