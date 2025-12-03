@@ -1998,6 +1998,7 @@ elif page == "Model":
         """
         Apply the same feature engineering that was done during training.
         This creates the engineered features that the model expects.
+        Also ensures all expected columns are present (fills missing with defaults).
         """
         df = df.copy()
         
@@ -2005,13 +2006,38 @@ elif page == "Model":
         # These must match exactly what was done during training
         
         # 1. damage_x_units: interaction between damage and num_units
-        df['damage_x_units'] = df['num_units'] * (df['damage'] == 'OVER $1,500').astype(int)
+        if 'num_units' in df.columns and 'damage' in df.columns:
+            df['damage_x_units'] = df['num_units'] * (df['damage'] == 'OVER $1,500').astype(int)
+        else:
+            df['damage_x_units'] = 0
         
         # 2. speed_x_lighting_dark: interaction between speed and darkness
-        df['speed_x_lighting_dark'] = df['posted_speed_limit'] * (df['lighting_condition'] == 'darkness, lighted road').astype(int)
+        if 'posted_speed_limit' in df.columns and 'lighting_condition' in df.columns:
+            df['speed_x_lighting_dark'] = df['posted_speed_limit'] * (df['lighting_condition'] == 'darkness, lighted road').astype(int)
+        else:
+            df['speed_x_lighting_dark'] = 0
         
         # 3. high_damage_flag: binary flag for high damage
-        df['high_damage_flag'] = (df['damage'] == 'OVER $1,500').astype(int)
+        if 'damage' in df.columns:
+            df['high_damage_flag'] = (df['damage'] == 'OVER $1,500').astype(int)
+        else:
+            df['high_damage_flag'] = 0
+        
+        # Ensure all expected boolean columns exist (standardize to 0/1)
+        # These are columns the model expects from training
+        expected_boolean_cols = [
+            'private_property_i', 'hit_and_run_i', 'crash_date_est_i', 
+            'intersection_related_i', 'work_zone_i'
+        ]
+        
+        for col in expected_boolean_cols:
+            if col not in df.columns:
+                # Column missing - add with default 0
+                df[col] = 0
+            else:
+                # Column exists - ensure it's 0/1
+                df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0).astype(int)
+                df[col] = df[col].clip(0, 1)  # Ensure 0 or 1 only
         
         return df
     
@@ -2162,6 +2188,18 @@ elif page == "Model":
                     
                     # Prepare features (drop target if present)
                     X_score = df_engineered.drop(columns=['crash_type'], errors='ignore')
+                    
+                    # Ensure all model-expected columns are present
+                    # Get expected features from model if available
+                    if hasattr(model, 'feature_names_in_'):
+                        expected_features = model.feature_names_in_
+                        # Add missing columns with default values
+                        for feat in expected_features:
+                            if feat not in X_score.columns:
+                                # Default to 0 for missing features
+                                X_score[feat] = 0
+                        # Reorder columns to match model expectations
+                        X_score = X_score[expected_features]
                     
                     # Get predictions
                     y_proba = model.predict_proba(X_score)[:, 1]
