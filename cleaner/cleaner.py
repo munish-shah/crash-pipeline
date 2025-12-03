@@ -65,15 +65,15 @@ def process_clean_job(msg: dict):
     cleaner_runs_total.inc()
     
     try:
-    corr_id = msg.get("corr_id")
-    
-    logging.info(f"Received clean job corr={corr_id}")
-    
-    df = download_csv_from_minio(corr_id)
+        corr_id = msg.get("corr_id")
+        
+        logging.info(f"Received clean job corr={corr_id}")
+        
+        df = download_csv_from_minio(corr_id)
         initial_rows = len(df)
         logging.info(f"Downloaded CSV: {initial_rows} rows, {len(df.columns)} cols")
-    
-    cleaned_df = clean_dataframe(df)
+        
+        cleaned_df = clean_dataframe(df)
         final_rows = len(cleaned_df)
         rows_dropped = initial_rows - final_rows
         
@@ -83,10 +83,10 @@ def process_clean_job(msg: dict):
             logging.info(f"Dropped {rows_dropped} rows during cleaning")
         
         logging.info(f"After cleaning: {final_rows} rows, {len(cleaned_df.columns)} cols")
-    
+        
         # Measure DuckDB write duration
         write_start = time.time()
-    upsert_to_gold(cleaned_df)
+        upsert_to_gold(cleaned_df)
         write_duration = time.time() - write_start
         cleaner_duckdb_write_duration_seconds.observe(write_duration)
         
@@ -103,7 +103,7 @@ def process_clean_job(msg: dict):
         
         # Record successful duration
         cleaner_duration_seconds.observe(time.time() - job_start)
-        
+    
     except Exception as e:
         cleaner_errors_total.inc()
         cleaner_duration_seconds.observe(time.time() - job_start)
