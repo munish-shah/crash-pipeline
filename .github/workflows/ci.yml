@@ -1,0 +1,118 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: ["*"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build:
+    name: Build & Validate Code
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Build Go extractor
+        working-directory: ./extractor
+        run: |
+          go mod tidy
+          go build ./...
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install transformer dependencies
+        working-directory: ./transformer
+        run: |
+          pip install -r requirements.txt
+
+      - name: Install cleaner dependencies
+        working-directory: ./cleaner
+        run: |
+          pip install -r requirements.txt
+
+      - name: Install streamlit dependencies
+        working-directory: ./streamlit-app
+        run: |
+          pip install -r requirements.txt
+
+      - name: Test Python imports
+        run: |
+          cd transformer
+          python -c "import transformer; print('Transformer imported successfully')"
+          cd ../cleaner
+          python -c "import cleaner; print('Cleaner imported successfully')"
+          cd ../streamlit-app
+          python -c "import streamlit_app; print('Streamlit app imported successfully')"
+
+  docker-validation:
+    name: Docker Compose Validation
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Validate docker-compose.yml
+        run: |
+          docker compose -f docker-compose.yaml config
+
+      - name: Build key services
+        run: |
+          docker compose -f docker-compose.yaml build extractor
+          docker compose -f docker-compose.yaml build transformer
+          docker compose -f docker-compose.yaml build cleaner
+          docker compose -f docker-compose.yaml build streamlit
+
+  sanity-check:
+    name: Sanity Check
+    runs-on: ubuntu-latest
+    needs: docker-validation
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Test extractor help (if available)
+        working-directory: ./extractor
+        run: |
+          go build -o extractor ./...
+          echo "Extractor built successfully"
+
+      - name: Test transformer import
+        run: |
+          python3 - <<EOF
+          import sys
+          sys.path.insert(0, 'transformer')
+          import transformer
+          print("✅ Transformer module imported successfully")
+          EOF
+
+      - name: Test cleaner import
+        run: |
+          python3 - <<EOF
+          import sys
+          sys.path.insert(0, 'cleaner')
+          import cleaner
+          print("✅ Cleaner module imported successfully")
+          EOF
+
