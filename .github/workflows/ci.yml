@@ -69,7 +69,12 @@ jobs:
 
       - name: Create .env file from .env.sample
         run: |
+          if [ ! -f .env.sample ]; then
+            echo "❌ .env.sample file not found!"
+            exit 1
+          fi
           cp .env.sample .env
+          echo "✅ Created .env from .env.sample"
 
       - name: Validate docker-compose.yml
         run: |
@@ -93,11 +98,26 @@ jobs:
         with:
           go-version: '1.22'
 
-      - name: Test extractor help (if available)
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install transformer dependencies
+        working-directory: ./transformer
+        run: |
+          pip install -r requirements.txt
+
+      - name: Install cleaner dependencies
+        working-directory: ./cleaner
+        run: |
+          pip install -r requirements.txt
+
+      - name: Test extractor build
         working-directory: ./extractor
         run: |
           go build -o extractor ./...
-          echo "Extractor built successfully"
+          echo "✅ Extractor built successfully"
 
       - name: Test transformer import
         run: |
