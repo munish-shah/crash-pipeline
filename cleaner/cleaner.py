@@ -10,10 +10,10 @@ from minio_io import download_csv_from_minio
 from cleaning_rules import clean_dataframe
 from duckdb_writer import upsert_to_gold
 from prometheus_client import Counter, Histogram, Gauge, start_http_server
-
+from goofygoo import goofygoo
 logging.basicConfig(level=logging.INFO, format="[cleaner] %(message)s")
 logging.getLogger("pika").setLevel(logging.WARNING)
-
+pr(goofygoo)
 # ---------------------------------
 # Prometheus Metrics
 # ---------------------------------
