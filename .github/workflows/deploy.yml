@@ -40,26 +40,26 @@ jobs:
 
       - name: Smoke test – HTTP health checks
         run: |
-          ssh -i key.pem -o StrictHostKeyChecking=no "$AZURE_USER@$AZURE_HOST" '
+          ssh -i key.pem -o StrictHostKeyChecking=no "$AZURE_USER@$AZURE_HOST" "
             set -e
 
-            cd "$PROJECT_PATH"
+            cd \"$PROJECT_PATH\"
 
-            echo "🔍 Verifying containers are running..."
-            docker compose ps | grep -q "Up" || (echo "❌ Some containers are not running" && exit 1)
+            echo \"🔍 Verifying containers are running...\"
+            docker compose -f docker-compose.yaml ps | grep -q \"Up\" || (echo \"❌ Some containers are not running\" && exit 1)
 
-            echo "🔍 Checking MinIO health..."
+            echo \"🔍 Checking MinIO health...\"
             curl -f http://localhost:9000/minio/health/ready -m 10
 
-            echo "🔍 Checking Streamlit..."
+            echo \"🔍 Checking Streamlit...\"
             curl -f http://localhost:8501 -m 10
 
-            echo "🔍 Checking Prometheus..."
+            echo \"🔍 Checking Prometheus...\"
             curl -f http://localhost:9090/-/healthy -m 10
 
-            echo "🔍 Checking Grafana..."
+            echo \"🔍 Checking Grafana...\"
             curl -f http://localhost:3000/api/health -m 10
 
-            echo "✅ All critical services are responding"
-          '
+            echo \"✅ All critical services are responding\"
+          "
 
