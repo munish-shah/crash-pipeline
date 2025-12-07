@@ -13,7 +13,7 @@ from prometheus_client import Counter, Histogram, Gauge, start_http_server
 
 logging.basicConfig(level=logging.INFO, format="[cleaner] %(message)s")
 logging.getLogger("pika").setLevel(logging.WARNING)
-
+# intentional bug
 # ---------------------------------
 # Prometheus Metrics
 # ---------------------------------
