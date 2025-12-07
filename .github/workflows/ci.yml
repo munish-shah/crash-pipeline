@@ -67,16 +67,17 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Create .env file from .env.sample
+        run: |
+          cp .env.sample .env
+
       - name: Validate docker-compose.yml
         run: |
           docker compose -f docker-compose.yaml config
 
       - name: Build key services
         run: |
-          docker compose -f docker-compose.yaml build extractor
-          docker compose -f docker-compose.yaml build transformer
-          docker compose -f docker-compose.yaml build cleaner
-          docker compose -f docker-compose.yaml build streamlit
+          docker compose -f docker-compose.yaml build --no-cache extractor transformer cleaner streamlit
 
   sanity-check:
     name: Sanity Check
